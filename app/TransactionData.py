@@ -6,6 +6,7 @@ sys.path.append(os.getcwd())
 import asyncio
 import pandas as pd
 import pandas_gbq
+import pyarrow as pa
 
 import asyncpg
 import mysql.connector
@@ -109,8 +110,8 @@ class DataOperationBase():
         table = client.get_table(table_id)  # Make an API request.
         print("Loaded {} rows and {} column to {}".format(table.num_rows,len(table.schema), table_id))
 
-    #### mysql db into big query ########
-    async def mysql_insert_to_BQ(connection,query,column,BQ_connection,table_id,project_id):
+    #### mysql db into big query ######## using pandasgbq
+    async def mysql_insert_to_BQ_gbq(connection,query,column,BQ_connection,table_id,project_id):
         cnx = connection
         cursor = cnx.cursor(buffered=True)
         mySql_select_Query = query
@@ -127,3 +128,32 @@ class DataOperationBase():
         pandas_gbq.to_gbq(df, table_id, project_id=project_id,if_exists='replace')
         table = client.get_table(table_id)  # Make an API request.
         print("Loaded {} rows and {} column to {}".format(table.num_rows,len(table.schema), table_id))
+
+    ##################################################
+    #### mysql db into big query ######## JOBCONFIG
+    async def mysql_insert_to_BQ(connection,query,column,table_id,set_schema):
+        cnx = connection
+        cursor = cnx.cursor(buffered=True)
+        mySql_select_Query = query
+        cursor.execute(mySql_select_Query)
+        record = cursor.fetchall()
+
+        df = pd.DataFrame(record, columns = column)
+        # Convert from pandas to Arrow https://arrow.apache.org/docs/python/pandas.html
+        table = pa.Table.from_pandas(df)
+        # Convert back to pandas
+        #Reducing Memory Use in Table.to_pandas (split_blocks=True, self_destruct=True)
+        df_new = table.to_pandas(split_blocks=True, self_destruct=True)
+        del table
+        # print(df_new)
+        client = bigquery.Client()
+        job_config = bigquery.LoadJobConfig(
+            schema=set_schema,autodetect=False,write_disposition="WRITE_TRUNCATE",
+        )
+        job = client.load_table_from_dataframe(
+            df_new, table_id, job_config=job_config
+        )
+        job.result()
+        table = client.get_table(table_id)  # Make an API request.
+        print("Loaded {} rows and {} column to {}".format(table.num_rows,len(table.schema), table_id))
+       

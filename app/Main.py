@@ -175,64 +175,129 @@ if __name__ == '__main__':
     #         table_id = "data_source_pg.STAG_address",     
     #     )
     # )
-# ################################################################################################################
-#     ####### big query create table customers from source mysql db ######
-#     #create table if exist
-#     BQ_create_table = loop.run_until_complete(
-#                         DataOperationBase.bq_create_table(
-#                         connection = conn_BQ,
-#                         dataset = 'data_source_mysql',
-#                         table = 'PROD_customers',
-#                         set_schema = [
-#                                     bigquery.SchemaField('customerNumber', 'INTEGER', mode='REQUIRED'),
-#                                     bigquery.SchemaField('customerName', 'STRING', mode='REQUIRED'),
-#                                     bigquery.SchemaField('contactLastName', 'STRING', mode='REQUIRED'),
-#                                     bigquery.SchemaField('contactFirstName', 'STRING', mode='REQUIRED'),
-#                                     bigquery.SchemaField('phone', 'STRING', mode='REQUIRED'),
-#                                     bigquery.SchemaField('addressLine1', 'STRING', mode='REQUIRED'),
-#                                     bigquery.SchemaField('addressLine2', 'STRING', mode='REQUIRED'),
-#                                     bigquery.SchemaField('city', 'STRING', mode='REQUIRED'),
-#                                     bigquery.SchemaField('state', 'STRING', mode='REQUIRED'),
-#                                     bigquery.SchemaField('postalCode', 'STRING', mode='REQUIRED'),
-#                                     bigquery.SchemaField('country', 'STRING', mode='REQUIRED'),
-#                                     bigquery.SchemaField('salesRepEmployeeNumber', 'INTEGER', mode='REQUIRED'),
-#                                     bigquery.SchemaField('creditLimit', 'FLOAT64', mode='REQUIRED')
-#                                     ]
-#         )
-#     )
+################################################################################################################
+    # ####### big query create table customers from source mysql db ######
+    # #create table if exist
+    # BQ_create_table = loop.run_until_complete(
+    #                     DataOperationBase.bq_create_table(
+    #                     connection = conn_BQ,
+    #                     dataset = 'data_source_mysql',
+    #                     table = 'PROD_customers',
+    #                     set_schema = [
+    #                                 bigquery.SchemaField('customerNumber', 'INTEGER', mode='REQUIRED'),
+    #                                 bigquery.SchemaField('customerName', 'STRING', mode='REQUIRED'),
+    #                                 bigquery.SchemaField('contactLastName', 'STRING', mode='REQUIRED'),
+    #                                 bigquery.SchemaField('contactFirstName', 'STRING', mode='REQUIRED'),
+    #                                 bigquery.SchemaField('phone', 'STRING', mode='REQUIRED'),
+    #                                 bigquery.SchemaField('addressLine1', 'STRING', mode='REQUIRED'),
+    #                                 bigquery.SchemaField('addressLine2', 'STRING', mode='REQUIRED'),
+    #                                 bigquery.SchemaField('city', 'STRING', mode='REQUIRED'),
+    #                                 bigquery.SchemaField('state', 'STRING', mode='REQUIRED'),
+    #                                 bigquery.SchemaField('postalCode', 'STRING', mode='REQUIRED'),
+    #                                 bigquery.SchemaField('country', 'STRING', mode='REQUIRED'),
+    #                                 bigquery.SchemaField('salesRepEmployeeNumber', 'INTEGER', mode='REQUIRED'),
+    #                                 bigquery.SchemaField('creditLimit', 'NUMERIC', mode='REQUIRED')
+    #                                 ]
+    #     )
+    # )
 
-#      ####### big query create table as select address from source mysql db ######
-#     BQ_create_table_ctas_customers = loop.run_until_complete(
-#                             DataOperationBase.bq_create_table_ctas(
-#                             connection = conn_BQ,
-#                             dataset = 'data_source_mysql',
-#                             new_table = 'STAG_customers',
-#                             query = QueryServices.create_table_ctas.format(
-#                                 New_Table = 'learning-data-engineering-1.data_source_mysql.STAG_customers',
-#                                 Column = 'customerNumber,customerName,contactLastName,contactFirstName,phone,addressLine1,addressLine2,city,state,postalCode,country,salesRepEmployeeNumber,creditLimit',
-#                                 Table = 'learning-data-engineering-1.data_source_mysql.PROD_customers'
-#                             )
-#                         )
-#                     )
+    #  ####### big query create table as select address from source mysql db ######
+    # BQ_create_table_ctas_customers = loop.run_until_complete(
+    #                         DataOperationBase.bq_create_table_ctas(
+    #                         connection = conn_BQ,
+    #                         dataset = 'data_source_mysql',
+    #                         new_table = 'STAG_customers',
+    #                         query = QueryServices.create_table_ctas.format(
+    #                             New_Table = 'learning-data-engineering-1.data_source_mysql.STAG_customers',
+    #                             Column = 'customerNumber,customerName,contactLastName,contactFirstName,phone,addressLine1,addressLine2,city,state,postalCode,country,salesRepEmployeeNumber,creditLimit',
+    #                             Table = 'learning-data-engineering-1.data_source_mysql.PROD_customers'
+    #                         )
+    #                     )
+    #                 )
 
-    # ####### big query insert data to table STAG from mysql ########
-    #  # #https://cloud.google.com/bigquery/docs/samples/bigquery-pandas-gbq-to-gbq-simple
-    BQ_Insert_STAG_customers = loop.run_until_complete(
-        DataOperationBase.mysql_insert_to_BQ(
-            connection = conn_mysql,
-            query = QueryServices.select.format(
-                Column = 'customerNumber,customerName,contactLastName,contactFirstName,phone,addressLine1,addressLine2,city,state,postalCode,country,salesRepEmployeeNumber,creditLimit',
-                Table = 'customers',
-                FilterColumn = ''
-            ),
-            column = ('customerNumber','customerName','contactLastName','contactFirstName','phone','addressLine1','addressLine2','city','state','postalCode','country','salesRepEmployeeNumber','creditLimit'),
-            BQ_connection = conn_BQ,
-            project_id = "learning-data-engineering-1",
-            table_id = "data_source_mysql.STAG_customers",     
+    # # ####### big query insert data to table STAG from mysql ########
+    # #  # #https://cloud.google.com/bigquery/docs/samples/bigquery-pandas-gbq-to-gbq-simple
+    # BQ_Insert_STAG_customers = loop.run_until_complete(
+    #     DataOperationBase.mysql_insert_to_BQ(
+    #         connection = conn_mysql,
+    #         query = QueryServices.select.format(
+    #             Column = 'customerNumber,customerName,contactLastName,contactFirstName,phone,addressLine1,addressLine2,city,state,postalCode,country,salesRepEmployeeNumber,creditLimit',
+    #             Table = 'customers',
+    #             FilterColumn = ''
+    #         ),
+    #         column = ('customerNumber','customerName','contactLastName','contactFirstName','phone','addressLine1','addressLine2','city','state','postalCode','country','salesRepEmployeeNumber','creditLimit'),
+    #         # BQ_connection = conn_BQ,
+    #         set_schema = [
+    #                     bigquery.SchemaField('customerNumber', 'INTEGER'),
+    #                     bigquery.SchemaField('customerName', 'STRING'),
+    #                     bigquery.SchemaField('contactLastName', 'STRING'),
+    #                     bigquery.SchemaField('contactFirstName', 'STRING'),
+    #                     bigquery.SchemaField('phone', 'STRING'),
+    #                     bigquery.SchemaField('addressLine1', 'STRING'),
+    #                     bigquery.SchemaField('addressLine2', 'STRING'),
+    #                     bigquery.SchemaField('city', 'STRING'),
+    #                     bigquery.SchemaField('state', 'STRING'),
+    #                     bigquery.SchemaField('postalCode', 'STRING'),
+    #                     bigquery.SchemaField('country', 'STRING'),
+    #                     bigquery.SchemaField('salesRepEmployeeNumber', 'INTEGER'),
+    #                     bigquery.SchemaField('creditLimit', 'NUMERIC')
+    #         ],
+            
+    #         # project_id = "learning-data-engineering-1",
+    #         table_id = "data_source_mysql.STAG_customers",     
+    #     )
+    # )
+    ###############################################################################################################
+    ####### big query create table employees from source mysql db ######
+    #create table if exist
+    BQ_create_table = loop.run_until_complete(
+                        DataOperationBase.bq_create_table(
+                        connection = conn_BQ,
+                        dataset = 'data_source_mysql',
+                        table = 'PROD_employees',         
+                        set_schema = [
+                                    bigquery.SchemaField('employeeNumber', 'INTEGER', mode='REQUIRED'),
+                                    bigquery.SchemaField('lastName', 'STRING', mode='REQUIRED'),
+                                    bigquery.SchemaField('firstName', 'STRING', mode='REQUIRED'),
+                                    bigquery.SchemaField('extension', 'STRING', mode='REQUIRED'),
+                                    bigquery.SchemaField('email', 'STRING', mode='REQUIRED'),
+                                    bigquery.SchemaField('officeCode', 'STRING', mode='REQUIRED'),
+                                    bigquery.SchemaField('reportsTo', 'INTEGER', mode='REQUIRED'),
+                                    bigquery.SchemaField('jobTitle', 'STRING', mode='REQUIRED'),
+                                    ]
         )
     )
+
+     ####### big query create table as select address from source mysql db ######
+    BQ_create_table_ctas_employees = loop.run_until_complete(
+                            DataOperationBase.bq_create_table_ctas(
+                            connection = conn_BQ,
+                            dataset = 'data_source_mysql',
+                            new_table = 'STAG_employees',
+                            query = QueryServices.create_table_ctas.format(
+                                New_Table = 'learning-data-engineering-1.data_source_mysql.STAG_employees',
+                                Column = 'employeeNumber,lastName,firstName,extension,email,officeCode,reportsTo,jobTitle',
+                                Table = 'learning-data-engineering-1.data_source_mysql.PROD_employees'
+                            )
+                        )
+                    )
     
-    
+    # ####### big query insert data employees to table STAG from mysql ######## using pandas_gbq
+    #  # #https://cloud.google.com/bigquery/docs/samples/bigquery-pandas-gbq-to-gbq-simple
+    BQ_Insert_STAG_employees = loop.run_until_complete(
+        DataOperationBase.mysql_insert_to_BQ_gbq(
+            connection = conn_mysql,
+            query = QueryServices.select.format(
+                Column = 'employeeNumber,lastName,firstName,extension,email,officeCode,reportsTo,jobTitle',
+                Table = 'employees',
+                FilterColumn = ''
+            ),
+            column = ('employeeNumber','lastName','firstName','extension','email','officeCode','reportsTo','jobTitle'),
+            BQ_connection = conn_BQ,
+            project_id = "learning-data-engineering-1",
+            table_id = "data_source_mysql.STAG_employees",     
+        )
+    )
     
 
 
