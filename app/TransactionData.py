@@ -95,7 +95,7 @@ class DataOperationBase():
             print("success create table", result)
 
  
-    #### postgre db into big query ########
+    #### postgre INSERT db into big query ########
     async def insert_to_BQ(connection,query,column,BQ_connection,project_id,table_id):
         record = await connection.fetch(query)
         df = pd.DataFrame(record, columns = column)
@@ -110,7 +110,7 @@ class DataOperationBase():
         table = client.get_table(table_id)  # Make an API request.
         print("Loaded {} rows and {} column to {}".format(table.num_rows,len(table.schema), table_id))
 
-    #### mysql db into big query ######## using pandasgbq
+    #### mysql INSERT db into big query ######## using pandas_gbq
     async def mysql_insert_to_BQ_gbq(connection,query,column,BQ_connection,table_id,project_id):
         cnx = connection
         cursor = cnx.cursor(buffered=True)
@@ -130,10 +130,11 @@ class DataOperationBase():
         print("Loaded {} rows and {} column to {}".format(table.num_rows,len(table.schema), table_id))
 
     ##################################################
-    #### mysql db into big query ######## JOBCONFIG
+    #### mysql INSERT db into big query ######## USING JOBCONFIG
     async def mysql_insert_to_BQ(connection,query,column,table_id,set_schema):
         cnx = connection
         cursor = cnx.cursor(buffered=True)
+        
         mySql_select_Query = query
         cursor.execute(mySql_select_Query)
         record = cursor.fetchall()
@@ -156,4 +157,34 @@ class DataOperationBase():
         job.result()
         table = client.get_table(table_id)  # Make an API request.
         print("Loaded {} rows and {} column to {}".format(table.num_rows,len(table.schema), table_id))
-       
+    
+     ##### Running Upsert Data Postgres########
+     #create store procedure upsert
+    async def create_sp_upsert(connection,query):
+        client = bigquery.Client()
+        set_query = (query)
+        job_config = client.query(set_query)
+        print("success create rountine")
+        
+    
+    async def run_procedure(connection,query):
+        client =  bigquery.Client()
+        set_query = (query)
+        try:
+            job_config = client.query(set_query)
+            print("success upsert data")
+        except:
+            print("Error")
+
+    # google.api_core.exceptions.NotFound unless not_found_ok is True.
+    async def delete_table(connection,table_id):  
+        # Construct a BigQuery client object.
+        client =  bigquery.Client()  
+        # TODO(developer): Set table_id to the ID of the table to fetch.
+        # table_id = 'your-project.your_dataset.your_table'
+
+        # If the table does not exist, delete_table raises
+        # google.api_core.exceptions.NotFound unless not_found_ok is True.
+        client.delete_table(table_id, not_found_ok=True) # Make an API request.
+        print("Deleted table '{}'.".format(table_id))
+        

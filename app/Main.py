@@ -21,13 +21,13 @@ loop = asyncio.new_event_loop()
 
 if __name__ == '__main__':
     #### set connection postgre ######
-    conn_pg = loop.run_until_complete(
-        Connection.DBClient.ConnectionDB()
-    )
-    #### set connection mysql ######
-    conn_mysql = loop.run_until_complete(
-        Connection.DBClient.ConnectionMysql()
-    )
+    # conn_pg = loop.run_until_complete(
+    #     Connection.DBClient.ConnectionDB()
+    # )
+    # #### set connection mysql ######
+    # conn_mysql = loop.run_until_complete(
+    #     Connection.DBClient.ConnectionMysql()
+    # )
 
     conn_BQ = loop.run_until_complete(
         Connection.DBClient.ConnectionBQ()
@@ -77,18 +77,18 @@ if __name__ == '__main__':
     #                         dataset_id="learning-data-engineering-1.data_source_mysql"
     #                     ))
 
-    # ####### big query create table actor from source postgre db ######
+    ####### big query create table actor from source postgre db ######
     # #create table if exist
     # BQ_create_table = loop.run_until_complete(
     #                     DataOperationBase.bq_create_table(
     #                     connection = conn_BQ,
     #                     dataset = 'data_source_pg',
-    #                     table = 'PROD_actor',
+    #                     table = 'PROD_actor2',
     #                     set_schema = [
     #                                 bigquery.SchemaField('actor_id', 'INTEGER', mode='REQUIRED'),
     #                                 bigquery.SchemaField('first_name', 'STRING', mode='REQUIRED'),
     #                                 bigquery.SchemaField('last_name', 'STRING', mode='REQUIRED'),
-    #                                 bigquery.SchemaField('last_update', 'DATETIME', mode='REQUIRED')
+    #                                 bigquery.SchemaField('last_update', 'TIMESTAMP', mode='REQUIRED')
     #                                 ]
     #     )
     # )
@@ -247,57 +247,84 @@ if __name__ == '__main__':
     #         table_id = "data_source_mysql.STAG_customers",     
     #     )
     # )
-    ###############################################################################################################
-    ####### big query create table employees from source mysql db ######
-    #create table if exist
-    BQ_create_table = loop.run_until_complete(
-                        DataOperationBase.bq_create_table(
-                        connection = conn_BQ,
-                        dataset = 'data_source_mysql',
-                        table = 'PROD_employees',         
-                        set_schema = [
-                                    bigquery.SchemaField('employeeNumber', 'INTEGER', mode='REQUIRED'),
-                                    bigquery.SchemaField('lastName', 'STRING', mode='REQUIRED'),
-                                    bigquery.SchemaField('firstName', 'STRING', mode='REQUIRED'),
-                                    bigquery.SchemaField('extension', 'STRING', mode='REQUIRED'),
-                                    bigquery.SchemaField('email', 'STRING', mode='REQUIRED'),
-                                    bigquery.SchemaField('officeCode', 'STRING', mode='REQUIRED'),
-                                    bigquery.SchemaField('reportsTo', 'INTEGER', mode='REQUIRED'),
-                                    bigquery.SchemaField('jobTitle', 'STRING', mode='REQUIRED'),
-                                    ]
-        )
-    )
+    # ###############################################################################################################
+    # ####### big query create table employees from source mysql db ######
+    # #create table if exist
+    # BQ_create_table = loop.run_until_complete(
+    #                     DataOperationBase.bq_create_table(
+    #                     connection = conn_BQ,
+    #                     dataset = 'data_source_mysql',
+    #                     table = 'PROD_employees',         
+    #                     set_schema = [
+    #                                 bigquery.SchemaField('employeeNumber', 'INTEGER', mode='REQUIRED'),
+    #                                 bigquery.SchemaField('lastName', 'STRING', mode='REQUIRED'),
+    #                                 bigquery.SchemaField('firstName', 'STRING', mode='REQUIRED'),
+    #                                 bigquery.SchemaField('extension', 'STRING', mode='REQUIRED'),
+    #                                 bigquery.SchemaField('email', 'STRING', mode='REQUIRED'),
+    #                                 bigquery.SchemaField('officeCode', 'STRING', mode='REQUIRED'),
+    #                                 bigquery.SchemaField('reportsTo', 'INTEGER', mode='REQUIRED'),
+    #                                 bigquery.SchemaField('jobTitle', 'STRING', mode='REQUIRED'),
+    #                                 ]
+    #     )
+    # )
 
-     ####### big query create table as select address from source mysql db ######
-    BQ_create_table_ctas_employees = loop.run_until_complete(
-                            DataOperationBase.bq_create_table_ctas(
-                            connection = conn_BQ,
-                            dataset = 'data_source_mysql',
-                            new_table = 'STAG_employees',
-                            query = QueryServices.create_table_ctas.format(
-                                New_Table = 'learning-data-engineering-1.data_source_mysql.STAG_employees',
-                                Column = 'employeeNumber,lastName,firstName,extension,email,officeCode,reportsTo,jobTitle',
-                                Table = 'learning-data-engineering-1.data_source_mysql.PROD_employees'
-                            )
-                        )
-                    )
+    #  ####### big query create table as select address from source mysql db ######
+    # BQ_create_table_ctas_employees = loop.run_until_complete(
+    #                         DataOperationBase.bq_create_table_ctas(
+    #                         connection = conn_BQ,
+    #                         dataset = 'data_source_mysql',
+    #                         new_table = 'STAG_employees',
+    #                         query = QueryServices.create_table_ctas.format(
+    #                             New_Table = 'learning-data-engineering-1.data_source_mysql.STAG_employees',
+    #                             Column = 'employeeNumber,lastName,firstName,extension,email,officeCode,reportsTo,jobTitle',
+    #                             Table = 'learning-data-engineering-1.data_source_mysql.PROD_employees'
+    #                         )
+    #                     )
+    #                 )
     
-    # ####### big query insert data employees to table STAG from mysql ######## using pandas_gbq
-    #  # #https://cloud.google.com/bigquery/docs/samples/bigquery-pandas-gbq-to-gbq-simple
-    BQ_Insert_STAG_employees = loop.run_until_complete(
-        DataOperationBase.mysql_insert_to_BQ_gbq(
-            connection = conn_mysql,
-            query = QueryServices.select.format(
-                Column = 'employeeNumber,lastName,firstName,extension,email,officeCode,reportsTo,jobTitle',
-                Table = 'employees',
-                FilterColumn = ''
-            ),
-            column = ('employeeNumber','lastName','firstName','extension','email','officeCode','reportsTo','jobTitle'),
-            BQ_connection = conn_BQ,
-            project_id = "learning-data-engineering-1",
-            table_id = "data_source_mysql.STAG_employees",     
+    # # ####### big query insert data employees to table STAG from mysql ######## using pandas_gbq
+    # #  # #https://cloud.google.com/bigquery/docs/samples/bigquery-pandas-gbq-to-gbq-simple
+    # BQ_Insert_STAG_employees = loop.run_until_complete(
+    #     DataOperationBase.mysql_insert_to_BQ_gbq(
+    #         connection = conn_mysql,
+    #         query = QueryServices.select.format(
+    #             Column = 'employeeNumber,lastName,firstName,extension,email,officeCode,reportsTo,jobTitle',
+    #             Table = 'employees',
+    #             FilterColumn = ''
+    #         ),
+    #         column = ('employeeNumber','lastName','firstName','extension','email','officeCode','reportsTo','jobTitle'),
+    #         BQ_connection = conn_BQ,
+    #         project_id = "learning-data-engineering-1",
+    #         table_id = "data_source_mysql.STAG_employees",     
+    #     )
+    # )
+    
+    # create_sp_upsert = loop.run_until_complete(
+    #     DataOperationBase.create_sp_upsert(
+    #         connection = conn_BQ,
+    #         query = QueryServices.upsert.format(
+    #             project_dataset = 'learning-data-engineering-1.data_source_pg'
+                
+    #         )   
+    #     )
+    # )
+    # run_procedure_actor = loop.run_until_complete(
+    #     DataOperationBase.run_procedure(
+    #         connection = conn_BQ,
+    #         query = QueryServices.run_procedure.format(
+    #             table_data = 'PROD_actor2',
+    #             table_change = 'STAG_actor',
+    #             project_dataset = 'learning-data-engineering-1.data_source_pg',
+    #             primary_key = 'actor_id'
+    #         )
+    #     )
+    # )
+
+    delete_table_PROD_actor2 = loop.run_until_complete(
+        DataOperationBase.delete_table(
+            connection = conn_BQ,
+            table_id = 'learning-data-engineering-1.data_source_pg.PROD_actor2'
         )
     )
-    
 
 
