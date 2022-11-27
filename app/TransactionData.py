@@ -14,6 +14,7 @@ import mysql.connector
 from google.cloud import bigquery
 from google.cloud.bigquery.table import Table
 from google.cloud.exceptions import NotFound
+from google.api_core.exceptions import BadRequest
 
 
 class DataOperationBase():
@@ -131,7 +132,7 @@ class DataOperationBase():
 
     ##################################################
     #### mysql INSERT db into big query ######## USING JOBCONFIG
-    async def mysql_insert_to_BQ(connection,query,column,table_id,set_schema):
+    async def mysql_insert_to_BQ(connection,query,column,BQ_connection,table_id,set_schema):
         cnx = connection
         cursor = cnx.cursor(buffered=True)
         
@@ -147,6 +148,7 @@ class DataOperationBase():
         df_new = table.to_pandas(split_blocks=True, self_destruct=True)
         del table
         # print(df_new)
+        
         client = bigquery.Client()
         job_config = bigquery.LoadJobConfig(
             schema=set_schema,autodetect=False,write_disposition="WRITE_TRUNCATE",
@@ -158,24 +160,23 @@ class DataOperationBase():
         table = client.get_table(table_id)  # Make an API request.
         print("Loaded {} rows and {} column to {}".format(table.num_rows,len(table.schema), table_id))
     
-     ##### Running Upsert Data Postgres########
-     #create store procedure upsert
-    async def create_sp_upsert(connection,query):
-        client = bigquery.Client()
-        set_query = (query)
-        job_config = client.query(set_query)
-        print("success create rountine")
-        
-    
-    async def run_procedure(connection,query):
-        client =  bigquery.Client()
-        set_query = (query)
-        try:
-            job_config = client.query(set_query)
-            print("success upsert data")
-        except:
-            print("Error")
+   
 
+     ######## RUN STORE PROCEDURE UPSERT #################   
+    
+    async def run_procedure(connection,query,table_id):
+        client =  bigquery.Client()
+        try:
+            set_query = (query)
+            job_config = client.query(set_query)
+            table = client.get_table(table_id)  # Make an API request.
+            print("Loaded {} rows and {} column to {}".format(table.num_rows,len(table.schema), table_id))
+        except BadRequest as e: #bigquery exception bad request
+            for e in job.errors:
+                print('ERROR: {}'.format(e['message'])) 
+    
+
+    ######### Delete table in Big Query ###################
     # google.api_core.exceptions.NotFound unless not_found_ok is True.
     async def delete_table(connection,table_id):  
         # Construct a BigQuery client object.
@@ -187,4 +188,3 @@ class DataOperationBase():
         # google.api_core.exceptions.NotFound unless not_found_ok is True.
         client.delete_table(table_id, not_found_ok=True) # Make an API request.
         print("Deleted table '{}'.".format(table_id))
-        
